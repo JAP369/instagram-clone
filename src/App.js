@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import './App.css';
 import Post from './Post';
+import ImageUpload from './ImageUpload';
 import { db, auth } from './firebase';
 import { makeStyles } from '@material-ui/core/styles';
 import Modal from '@material-ui/core/Modal';
@@ -58,9 +59,11 @@ function App() {
   }, [user, username]);
 
   useEffect(() => {
-    db.collection('posts').onSnapshot((snapshot) => {
-      setPosts(snapshot.docs.map((doc) => ({ id: doc.id, post: doc.data() })));
-    });
+    db.collection('posts')
+      .orderBy('timestamp', 'desc')
+      .onSnapshot((snapshot) => {
+        setPosts(snapshot.docs.map((doc) => ({ id: doc.id, post: doc.data() })));
+      });
   }, []);
 
   const signUp = (e) => {
@@ -74,7 +77,15 @@ function App() {
       .catch((error) => alert(error.message));
   };
 
-  const signIn = (e) => {};
+  const signIn = (e) => {
+    e.preventDefault();
+
+    auth
+      .signInWithEmailAndPassword(email, password)
+      .catch((error) => alert(error.message));
+
+    setOpenSignIn(false);
+  };
 
   return (
     <div className='app'>
@@ -93,8 +104,18 @@ function App() {
                 alt=''
               />
             </center>
-            <Input placeholder='username' type='text' value={username} onChange={(e) => setUsername(e.target.value)} />
-            <Input placeholder='email' type='text' value={email} onChange={(e) => setEmail(e.target.value)} />
+            <Input
+              placeholder='username'
+              type='text'
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+            />
+            <Input
+              placeholder='email'
+              type='text'
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
             <Input
               placeholder='password'
               type='password'
@@ -122,7 +143,12 @@ function App() {
                 alt=''
               />
             </center>
-            <Input placeholder='email' type='text' value={email} onChange={(e) => setEmail(e.target.value)} />
+            <Input
+              placeholder='email'
+              type='text'
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
             <Input
               placeholder='password'
               type='password'
@@ -142,41 +168,49 @@ function App() {
           src='https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Instagram_logo.svg/120px-Instagram_logo.svg.png'
           alt=''
         />
+        {user ? (
+          <Button
+            onClick={() => {
+              auth.signOut();
+            }}>
+            Logout
+          </Button>
+        ) : (
+          <div className='app__loginContainer'>
+            <Button
+              onClick={() => {
+                setOpenSignIn(true);
+              }}>
+              Sign In
+            </Button>
+            <Button
+              onClick={() => {
+                setOpen(true);
+              }}>
+              Sign Up
+            </Button>
+          </div>
+        )}
       </div>
 
-      {user ? (
-        <Button
-          onClick={() => {
-            auth.signOut();
-          }}>
-          Logout
-        </Button>
-      ) : (
-        <div className='app__loginContainer'>
-          <Button
-            onClick={() => {
-              setOpenSignIn(true);
-            }}>
-            Sign In
-          </Button>
-          <Button
-            onClick={() => {
-              setOpen(true);
-            }}>
-            Sign Up
-          </Button>
-        </div>
-      )}
-
-      <h1>INSTAGRAM CLONE</h1>
       {/* open a curly bracket to input javascript
       input useState name and use map function
       within the map function: create a function called 'post'
       then return the 'post' component
       inside the component: apply the props */}
       {posts.map(({ id, post }) => (
-        <Post key={id} username={post.username} caption={post.caption} imageURL={post.imageURL} />
+        <Post
+          key={id}
+          username={post.username}
+          caption={post.caption}
+          imageURL={post.imageURL}
+        />
       ))}
+      {user?.displayName ? (
+        <ImageUpload username={user.displayName} />
+      ) : (
+        <h3>Sorry, you need to login to upload</h3>
+      )}
     </div>
   );
 }
