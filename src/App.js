@@ -6,7 +6,7 @@ import { db, auth } from './firebase';
 import { makeStyles } from '@material-ui/core/styles';
 import Modal from '@material-ui/core/Modal';
 import { Button, Input } from '@material-ui/core';
-import { findRenderedDOMComponentWithClass } from 'react-dom/test-utils';
+import InstagramEmbed from 'react-instagram-embed';
 
 function getModalStyle() {
   const top = 50;
@@ -198,14 +198,35 @@ function App() {
       within the map function: create a function called 'post'
       then return the 'post' component
       inside the component: apply the props */}
-      {posts.map(({ id, post }) => (
-        <Post
-          key={id}
-          username={post.username}
-          caption={post.caption}
-          imageURL={post.imageURL}
-        />
-      ))}
+      <div className='app__posts'>
+        <div className='app__postsLeft'>
+          {posts.map(({ id, post }) => (
+            <Post
+              key={id}
+              postId={id}
+              user={user}
+              username={post.username}
+              caption={post.caption}
+              imageURL={post.imageURL}
+            />
+          ))}
+        </div>
+        <div className='app__postsRight'>
+          <InstagramEmbed
+            url='https://instagr.am/p/Zw9o4/'
+            maxWidth={320}
+            hideCaption={false}
+            containerTagName='div'
+            protocol=''
+            injectScript
+            onLoading={() => {}}
+            onSuccess={() => {}}
+            onAfterRender={() => {}}
+            onFailure={() => {}}
+          />
+        </div>
+      </div>
+
       {user?.displayName ? (
         <ImageUpload username={user.displayName} />
       ) : (

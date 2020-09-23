@@ -51,7 +51,7 @@ function ImageUpload({ username }) {
           });
       }
     );
-  };
+  }; 
 
   return (
     <div className='imageupload'>
